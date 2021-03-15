@@ -4,7 +4,7 @@ This is minimum demo of headless chrome and selenium on container image on AWS L
 
 This image goes with these versions.
 
-- Python 3.7
+- Python 3.8
 - serverless-chrome v1.0.0-37
 - chromedriver 2.37
 - selenium 3.141.0 (latest)
