@@ -13,6 +13,7 @@ This image goes with these versions.
 
 ```bash
 $ YOUR_REGION=ap-northeast-1 # your region
+$ git clone --depth 1 https://github.com/umihico/docker-selenium-lambda.git docker-selenium-lambda && cd $_
 $ sls deploy --region $YOUR_REGION
 $ sls invoke -f server --region $YOUR_REGION
 ```
