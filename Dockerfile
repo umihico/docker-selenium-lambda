@@ -9,8 +9,7 @@ RUN mkdir -p /opt/bin/ && \
 
 FROM public.ecr.aws/lambda/python:3.8
 RUN mkdir -p /opt/bin && pip install selenium
-COPY google-chrome.repo /etc/yum.repos.d/
-RUN yum install -y --enablerepo=google-chrome google-chrome-stable
+RUN yum install -y https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 COPY --from=build /opt/bin/headless-chromium /opt/bin/
 COPY --from=build /opt/bin/chromedriver /opt/bin/
 COPY test.py ./
