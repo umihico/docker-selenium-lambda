@@ -1,7 +1,7 @@
 FROM public.ecr.aws/lambda/python:3.9 as build
 RUN yum install -y unzip && \
-    curl -SL https://chromedriver.storage.googleapis.com/89.0.4389.23/chromedriver_linux64.zip > /tmp/chromedriver.zip && \
-    curl -SL https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F843831%2Fchrome-linux.zip?alt=media > /tmp/chrome-linux.zip && \
+    curl -Lo "/tmp/chromedriver.zip" "https://chromedriver.storage.googleapis.com/89.0.4389.23/chromedriver_linux64.zip" && \
+    curl -Lo "/tmp/chrome-linux.zip" "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F843831%2Fchrome-linux.zip?alt=media" && \
     unzip /tmp/chromedriver.zip -d /opt/ && \
     unzip /tmp/chrome-linux.zip -d /opt/
 
