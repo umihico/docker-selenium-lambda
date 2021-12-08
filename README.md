@@ -12,10 +12,10 @@ This image goes with these versions.
 ### Running the demo
 
 ```bash
-$ YOUR_REGION=ap-northeast-1 # your region
-$ git clone --depth 1 https://github.com/umihico/docker-selenium-lambda.git docker-selenium-lambda && cd $_
-$ sls deploy --region $YOUR_REGION
-$ sls invoke -f server --region $YOUR_REGION
+$ export AWS_REGION=ap-northeast-1 # You can specify region or skip this line. us-east-1 will be used by default.
+$ sls create --template-url "https://github.com/umihico/docker-selenium-lambda/tree/main" --path docker-selenium-lambda && cd $_
+$ sls deploy
+$ sls invoke --function demo # Yay! You will get texts of example.com
 ```
 
 ### Side Project

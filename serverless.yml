@@ -3,14 +3,14 @@ service: docker-selenium-lambda
 provider:
   name: aws
   stage: ${opt:stage, 'prod'}
-  region: ${opt:region}
+  region: ${env:AWS_REGION, 'us-east-1'}
   ecr:
     images:
       test:
         path: ./
 
 functions:
-  server:
+  demo:
     timeout: 60
     memorySize: 2048
     image:
