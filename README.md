@@ -18,10 +18,6 @@ $ sls deploy --region $YOUR_REGION
 $ sls invoke -f server --region $YOUR_REGION
 ```
 
-### Contribution
-
-I'm trying run latest Chrome but having difficulties. Please check out other branches and issues.
-
 ### Side Project
 
 If you don't want to create functions each time for each purpose, Please check out [pythonista-chromeless](https://github.com/umihico/pythonista-chromeless)
