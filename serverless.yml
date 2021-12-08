@@ -6,7 +6,7 @@ provider:
   region: ${env:AWS_REGION, 'us-east-1'}
   ecr:
     images:
-      test:
+      img:
         path: ./
 
 functions:
@@ -14,4 +14,4 @@ functions:
     timeout: 60
     memorySize: 2048
     image:
-      name: test
+      name: img
