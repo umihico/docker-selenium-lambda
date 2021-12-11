@@ -1,0 +1,95 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@2.0.6
+  serverless: circleci/serverless-framework@1.0.1
+  github-cli: circleci/github-cli@1.0.5
+
+aliases:
+  - &fix_docker
+    run:
+      name: Fix docker (local-only)
+      command: |
+        if [[ $CIRCLE_SHELL_ENV == *"localbuild"* ]]; then
+          sudo chown $(whoami):$(whoami) /run/docker-temp.sock
+        fi
+
+jobs:
+  update-versions:
+    docker:
+      - image: "cimg/base:stable"
+    steps:
+      - github-cli/setup
+      - github-cli/clone
+      - run:
+          command: |
+            set -euxo pipefail
+            JSON=$(curl https://omahaproxy.appspot.com/all.json | jq -r '.[] | select(.os=="linux") | .versions[] | select(.channel=="stable")')
+            MAJOR_VERSION=$(echo $JSON | jq -r '.version | split(".") | .[0]')
+            CHROME_VERSION=$(echo $JSON | jq -r '.version')
+            echo $CHROME_VERSION > /tmp/CHROME_VERSION
+            POSITION=$(echo $JSON | jq -r '.branch_base_position')
+
+            while true; do
+                DOWNLOAD_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F${POSITION}%2Fchrome-linux.zip?alt=media"
+                curl -I $DOWNLOAD_URL | head -1 | grep -q 404 || break
+                POSITION=$(($POSITION-1))
+            done
+
+            DRIVER_VERSION=$(curl "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${MAJOR_VERSION}")
+            echo $DRIVER_VERSION > /tmp/DRIVER_VERSION
+            sed -r "s/chromedriver.storage.googleapis.com\/[0-9.]+/chromedriver.storage.googleapis.com\/${DRIVER_VERSION}/g; s/Linux_x64%2F[0-9]+%2Fchrome-linux.zip/Linux_x64%2F${POSITION}%2Fchrome-linux.zip/g" -i Dockerfile
+            git diff --numstat | grep -q "Dockerfile" || circleci-agent step halt
+          name: Modify Dockerfile
+      - aws-cli/setup
+      - serverless/setup
+      - setup_remote_docker:
+          version: 19.03.13
+      - <<: *fix_docker
+      - run:
+          command: sls deploy
+          name: Delpoy
+      - run:
+          command: |
+            sls invoke -f demo > /tmp/result
+            cat /tmp/result
+          name: Invoke
+      - run:
+          command: cat /tmp/result | grep -q "This domain is for use in illustrative examples in documents" || circleci-agent step halt
+          name: Test
+      - add_ssh_keys:
+          fingerprints:
+            - "0c:de:e4:19:f5:d8:37:ac:5f:1f:a4:81:88:35:30:c1"
+      - run:
+          command: |
+            git config user.email "umihico@users.noreply.github.com"
+            git config user.name "umihico"
+          name: Configure git
+      - run:
+          command: |
+            set -euxo pipefail
+            CHROME_VERSION=$(cat /tmp/CHROME_VERSION)
+            DRIVER_VERSION=$(cat /tmp/DRIVER_VERSION)
+            COMMIT="use chromium ${CHROME_VERSION} and chromedriver ${DRIVER_VERSION}"
+            BRANCH="v${CHROME_VERSION}-${DRIVER_VERSION}"
+            git checkout -b $BRANCH
+            git add Dockerfile
+            git commit -m "$COMMIT"
+            git push --set-upstream origin $BRANCH
+            gh pr create --fill
+            gh pr merge --delete-branch --merge $BRANCH --body "[skip ci]"
+            gh release create $BRANCH --notes "$COMMIT" --title "$BRANCH"
+          name: Release
+
+workflows:
+  version: 2
+  scheduled-workflow:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - circleci
+    jobs:
+      - update-versions
