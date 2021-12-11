@@ -39,6 +39,7 @@ jobs:
             DRIVER_VERSION=$(curl "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${MAJOR_VERSION}")
             echo $DRIVER_VERSION > /tmp/DRIVER_VERSION
             sed -r "s/chromedriver.storage.googleapis.com\/[0-9.]+/chromedriver.storage.googleapis.com\/${DRIVER_VERSION}/g; s/Linux_x64%2F[0-9]+%2Fchrome-linux.zip/Linux_x64%2F${POSITION}%2Fchrome-linux.zip/g" -i Dockerfile
+            sed -r "s/- chromium [0-9.]+/- chromium ${CHROME_VERSION}/g; s/- chromedriver [0-9.]+/- chromedriver ${DRIVER_VERSION}/g" -i README.md
             git diff --numstat | grep -q "Dockerfile" || circleci-agent step halt
           name: Modify Dockerfile
       - aws-cli/setup
@@ -73,7 +74,7 @@ jobs:
             COMMIT="use chromium ${CHROME_VERSION} and chromedriver ${DRIVER_VERSION}"
             BRANCH="v${CHROME_VERSION}-${DRIVER_VERSION}"
             git checkout -b $BRANCH
-            git add Dockerfile
+            git add Dockerfile README.md
             git commit -m "$COMMIT"
             git push --set-upstream origin $BRANCH
             gh pr create --fill
