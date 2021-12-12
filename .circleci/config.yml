@@ -67,8 +67,12 @@ jobs:
           name: Configure git
       - run:
           command: |
-            set -euxo pipefail
+            git --no-pager diff
             git diff --numstat | grep -q "Dockerfile" || circleci-agent step halt
+          name: Exit if Dockerfile has no changes
+      - run:
+          command: |
+            set -euxo pipefail
             CHROME_VERSION=$(cat /tmp/CHROME_VERSION)
             DRIVER_VERSION=$(cat /tmp/DRIVER_VERSION)
             COMMIT="use chromium ${CHROME_VERSION} and chromedriver ${DRIVER_VERSION}"
