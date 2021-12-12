@@ -15,7 +15,7 @@ aliases:
         fi
 
 jobs:
-  update-versions:
+  main:
     docker:
       - image: "cimg/base:stable"
     steps:
@@ -67,16 +67,23 @@ jobs:
           name: Configure git
       - run:
           command: |
+            SELENIUM_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img pip freeze | grep selenium | awk -F "==" '{print $2}')
+            echo $SELENIUM_VERSION > /tmp/SELENIUM_VERSION
+            sed -r "s/- selenium [0-9.]+/- selenium ${SELENIUM_VERSION}/g" -i README.md
+          name: Rewrite selenium version
+      - run:
+          command: |
             git --no-pager diff
-            git diff --numstat | grep -q "Dockerfile" || circleci-agent step halt
-          name: Exit if Dockerfile has no changes
+            git diff --numstat | grep -q "README" || circleci-agent step halt
+          name: Exit if no version updates
       - run:
           command: |
             set -euxo pipefail
             CHROME_VERSION=$(cat /tmp/CHROME_VERSION)
             DRIVER_VERSION=$(cat /tmp/DRIVER_VERSION)
-            COMMIT="use chromium ${CHROME_VERSION} and chromedriver ${DRIVER_VERSION}"
-            BRANCH="v${CHROME_VERSION}-${DRIVER_VERSION}"
+            SELENIUM_VERSION=$(cat /tmp/SELENIUM_VERSION)
+            COMMIT="use chromium ${CHROME_VERSION}, chromedriver ${DRIVER_VERSION} and selenium ${SELENIUM_VERSION}"
+            BRANCH="v3.9-${CHROME_VERSION}-${DRIVER_VERSION}-${SELENIUM_VERSION}"
             git checkout -b $BRANCH
             git add Dockerfile README.md
             git commit -m "$COMMIT"
@@ -88,7 +95,10 @@ jobs:
 
 workflows:
   version: 2
-  scheduled-workflow:
+  commit:
+    jobs:
+      - main
+  nightly:
     triggers:
       - schedule:
           cron: "0 0 * * *"
@@ -97,4 +107,4 @@ workflows:
               only:
                 - circleci
     jobs:
-      - update-versions
+      - main
