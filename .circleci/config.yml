@@ -40,7 +40,6 @@ jobs:
             echo $DRIVER_VERSION > /tmp/DRIVER_VERSION
             sed -r "s/chromedriver.storage.googleapis.com\/[0-9.]+/chromedriver.storage.googleapis.com\/${DRIVER_VERSION}/g; s/Linux_x64%2F[0-9]+%2Fchrome-linux.zip/Linux_x64%2F${POSITION}%2Fchrome-linux.zip/g" -i Dockerfile
             sed -r "s/- chromium [0-9.]+/- chromium ${CHROME_VERSION}/g; s/- chromedriver [0-9.]+/- chromedriver ${DRIVER_VERSION}/g" -i README.md
-            git diff --numstat | grep -q "Dockerfile" || circleci-agent step halt
           name: Modify Dockerfile
       - aws-cli/setup
       - serverless/setup
@@ -69,6 +68,7 @@ jobs:
       - run:
           command: |
             set -euxo pipefail
+            git diff --numstat | grep -q "Dockerfile" || circleci-agent step halt
             CHROME_VERSION=$(cat /tmp/CHROME_VERSION)
             DRIVER_VERSION=$(cat /tmp/DRIVER_VERSION)
             COMMIT="use chromium ${CHROME_VERSION} and chromedriver ${DRIVER_VERSION}"
