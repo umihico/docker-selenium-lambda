@@ -73,6 +73,12 @@ jobs:
           name: Rewrite selenium version
       - run:
           command: |
+            PYTHON_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img python -V | awk '{print $2}')
+            echo $PYTHON_VERSION > /tmp/PYTHON_VERSION
+            sed -r "s/- Python [0-9.]+/- Python ${PYTHON_VERSION}/g" -i README.md
+          name: Rewrite Python version
+      - run:
+          command: |
             git --no-pager diff
             git diff --numstat | grep -q "README" || circleci-agent step halt
           name: Exit if no version updates
@@ -82,13 +88,14 @@ jobs:
             CHROME_VERSION=$(cat /tmp/CHROME_VERSION)
             DRIVER_VERSION=$(cat /tmp/DRIVER_VERSION)
             SELENIUM_VERSION=$(cat /tmp/SELENIUM_VERSION)
-            COMMIT="use chromium ${CHROME_VERSION}, chromedriver ${DRIVER_VERSION} and selenium ${SELENIUM_VERSION}"
-            BRANCH="v3.9-${CHROME_VERSION}-${DRIVER_VERSION}-${SELENIUM_VERSION}"
+            PYTHON_VERSION=$(cat /tmp/PYTHON_VERSION)
+            COMMIT="use python ${PYTHON_VERSION}, chromium ${CHROME_VERSION}, chromedriver ${DRIVER_VERSION} and selenium ${SELENIUM_VERSION}"
+            BRANCH="v${PYTHON_VERSION}-${CHROME_VERSION}-${DRIVER_VERSION}-${SELENIUM_VERSION}"
             git checkout -b $BRANCH
             git add Dockerfile README.md
             git commit -m "$COMMIT"
             git push --set-upstream origin $BRANCH
-            gh pr create --fill
+            gh pr create --body "${COMMIT} [skip ci]" --title "version updates"
             gh pr merge --delete-branch --merge $BRANCH --body "[skip ci]"
             gh release create $BRANCH --notes "$COMMIT" --title "$BRANCH"
           name: Release
