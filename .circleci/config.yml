@@ -41,10 +41,16 @@ jobs:
                 POSITION=$(($POSITION-1))
             done
 
+            echo "POSITION=${POSITION}" >> /tmp/VERSIONS
             DRIVER_VERSION=$(curl "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${MAJOR_VERSION}")
             echo "DRIVER_VERSION=${DRIVER_VERSION}" >> /tmp/VERSIONS
+          name: Fetch latest chromium and chromedriver versions
+      - run:
+          command: |
+            set -euxo pipefail
+            POSITION=$(cat /tmp/VERSIONS | grep POSITION | awk -F "=" '{print $2}')
+            DRIVER_VERSION=$(cat /tmp/VERSIONS | grep DRIVER_VERSION | awk -F "=" '{print $2}')
             sed -r "s/chromedriver.storage.googleapis.com\/[0-9.]+/chromedriver.storage.googleapis.com\/${DRIVER_VERSION}/g; s/Linux_x64%2F[0-9]+%2Fchrome-linux.zip/Linux_x64%2F${POSITION}%2Fchrome-linux.zip/g" -i Dockerfile
-            sed -r "s/- chromium [0-9.]+/- chromium ${CHROME_VERSION}/g; s/- chromedriver [0-9.]+/- chromedriver ${DRIVER_VERSION}/g" -i README.md
           name: Modify Dockerfile
       - run:
           command: sls deploy
@@ -63,28 +69,35 @@ jobs:
             - "0c:de:e4:19:f5:d8:37:ac:5f:1f:a4:81:88:35:30:c1"
       - run:
           command: |
-            git config user.email "umihico@users.noreply.github.com"
-            git config user.name "umihico"
-          name: Configure git
-      - run:
-          command: |
             SELENIUM_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img pip freeze | grep selenium | awk -F "==" '{print $2}')
             echo "SELENIUM_VERSION=${SELENIUM_VERSION}" >> /tmp/VERSIONS
-            sed -r "s/- selenium [0-9.]+/- selenium ${SELENIUM_VERSION}/g" -i README.md
-          name: Rewrite selenium version
+          name: Extract installed selenium version
       - run:
           command: |
             PYTHON_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img python -V | awk '{print $2}')
             echo "PYTHON_VERSION=${PYTHON_VERSION}" >> /tmp/VERSIONS
-            sed -r "s/- Python [0-9.]+/- Python ${PYTHON_VERSION}/g" -i README.md
-          name: Rewrite Python version
+          name: Extract installed Python version
       - store_artifacts:
           path: /tmp/VERSIONS
       - run:
           command: |
+            set -euxo pipefail
+            CHROME_VERSION=$(cat /tmp/VERSIONS | grep CHROME_VERSION | awk -F "=" '{print $2}')
+            DRIVER_VERSION=$(cat /tmp/VERSIONS | grep DRIVER_VERSION | awk -F "=" '{print $2}')
+            SELENIUM_VERSION=$(cat /tmp/VERSIONS | grep SELENIUM_VERSION | awk -F "=" '{print $2}')
+            PYTHON_VERSION=$(cat /tmp/VERSIONS | grep PYTHON_VERSION | awk -F "=" '{print $2}')
+            sed -r "s/- chromium [0-9.]+/- chromium ${CHROME_VERSION}/g; s/- chromedriver [0-9.]+/- chromedriver ${DRIVER_VERSION}/g; s/- selenium [0-9.]+/- selenium ${SELENIUM_VERSION}/g; s/- Python [0-9.]+/- Python ${PYTHON_VERSION}/g" -i README.md
+          name: Modify README.md
+      - run:
+          command: |
             git --no-pager diff
             git diff --numstat | grep -q "README" || circleci-agent step halt
-          name: Exit if no version updates
+          name: Exit if no changes
+      - run:
+          command: |
+            git config user.email "umihico@users.noreply.github.com"
+            git config user.name "umihico"
+          name: Configure git
       - run:
           command: |
             set -euxo pipefail
