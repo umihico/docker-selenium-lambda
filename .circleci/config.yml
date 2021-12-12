@@ -101,19 +101,15 @@ jobs:
       - run:
           command: |
             set -euxo pipefail
-            CHROME_VERSION=$(cat /tmp/VERSIONS | grep CHROME_VERSION | awk -F "=" '{print $2}')
-            DRIVER_VERSION=$(cat /tmp/VERSIONS | grep DRIVER_VERSION | awk -F "=" '{print $2}')
-            SELENIUM_VERSION=$(cat /tmp/VERSIONS | grep SELENIUM_VERSION | awk -F "=" '{print $2}')
-            PYTHON_VERSION=$(cat /tmp/VERSIONS | grep PYTHON_VERSION | awk -F "=" '{print $2}')
-            COMMIT="use python ${PYTHON_VERSION}, chromium ${CHROME_VERSION}, chromedriver ${DRIVER_VERSION} and selenium ${SELENIUM_VERSION}"
-            BRANCH="v${PYTHON_VERSION}-${CHROME_VERSION}-${DRIVER_VERSION}-${SELENIUM_VERSION}"
+            BRANCH=$(date +%Y-%m-%d-%H%M%S)
+            TITLE="Version Updates $(date)"
             git checkout -b $BRANCH
             git add Dockerfile README.md
-            git commit -m "$COMMIT" -m "[skip ci]"
+            git commit -m "${TITLE}" -m "[skip ci]" -m "$(cat /tmp/VERSIONS)"
             git push --set-upstream origin $BRANCH
-            gh pr create --body "${COMMIT} [skip ci]" --title "version updates"
+            gh pr create --body-file /tmp/VERSIONS --title "PR:${TITLE}"
             gh pr merge --delete-branch --merge $BRANCH --body "[skip ci]"
-            gh release create $BRANCH --notes "$COMMIT" --title "$BRANCH"
+            gh release create $BRANCH --notes-file /tmp/VERSIONS --title "${TITLE}"
           name: Release
 
 workflows:
