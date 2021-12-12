@@ -21,6 +21,11 @@ jobs:
     steps:
       - github-cli/setup
       - github-cli/clone
+      - aws-cli/setup
+      - serverless/setup
+      - setup_remote_docker:
+          version: 19.03.13
+      - <<: *fix_docker
       - run:
           command: |
             set -euxo pipefail
@@ -41,11 +46,6 @@ jobs:
             sed -r "s/chromedriver.storage.googleapis.com\/[0-9.]+/chromedriver.storage.googleapis.com\/${DRIVER_VERSION}/g; s/Linux_x64%2F[0-9]+%2Fchrome-linux.zip/Linux_x64%2F${POSITION}%2Fchrome-linux.zip/g" -i Dockerfile
             sed -r "s/- chromium [0-9.]+/- chromium ${CHROME_VERSION}/g; s/- chromedriver [0-9.]+/- chromedriver ${DRIVER_VERSION}/g" -i README.md
           name: Modify Dockerfile
-      - aws-cli/setup
-      - serverless/setup
-      - setup_remote_docker:
-          version: 19.03.13
-      - <<: *fix_docker
       - run:
           command: sls deploy
           name: Delpoy
