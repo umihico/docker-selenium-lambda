@@ -55,7 +55,7 @@ jobs:
             cat /tmp/result
           name: Invoke
       - run:
-          command: cat /tmp/result | grep -q "This domain is for use in illustrative examples in documents" || circleci-agent step halt
+          command: cat /tmp/result | grep -q "This domain is for use in illustrative examples in documents"
           name: Test
       - add_ssh_keys:
           fingerprints:
