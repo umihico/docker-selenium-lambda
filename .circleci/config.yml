@@ -51,11 +51,12 @@ jobs:
           name: Delpoy
       - run:
           command: |
-            sls invoke -f demo > /tmp/result
-            cat /tmp/result
+            sls invoke -f demo > /tmp/RESULT
           name: Invoke
+      - store_artifacts:
+          path: /tmp/RESULT
       - run:
-          command: cat /tmp/result | grep -q "This domain is for use in illustrative examples in documents"
+          command: cat /tmp/RESULT | grep -q "This domain is for use in illustrative examples in documents"
           name: Test
       - add_ssh_keys:
           fingerprints:
