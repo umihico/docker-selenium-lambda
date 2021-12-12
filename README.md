@@ -4,7 +4,7 @@ This is minimum demo of headless chrome and selenium on container image on AWS L
 
 This image goes with these versions.
 
-- Python 3.9
+- Python 3.9.8
 - chromium 96.0.4664.93
 - chromedriver 96.0.4664.45
 - selenium 4.1.0
