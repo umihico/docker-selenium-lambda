@@ -93,7 +93,7 @@ jobs:
             BRANCH="v${PYTHON_VERSION}-${CHROME_VERSION}-${DRIVER_VERSION}-${SELENIUM_VERSION}"
             git checkout -b $BRANCH
             git add Dockerfile README.md
-            git commit -m "$COMMIT"
+            git commit -m "$COMMIT" -m "[skip ci]"
             git push --set-upstream origin $BRANCH
             gh pr create --body "${COMMIT} [skip ci]" --title "version updates"
             gh pr merge --delete-branch --merge $BRANCH --body "[skip ci]"
