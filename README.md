@@ -10,15 +10,16 @@ This image goes with these versions. [These are automatically updated and tested
 - selenium 4.1.0
 
 
-### Running the demo
+## Running the demo
 
 ```bash
+$ npm install -g serverless # skip this line if you have already installed Serverless Framework
 $ export AWS_REGION=ap-northeast-1 # You can specify region or skip this line. us-east-1 will be used by default.
 $ sls create --template-url "https://github.com/umihico/docker-selenium-lambda/tree/main" --path docker-selenium-lambda && cd $_
 $ sls deploy
 $ sls invoke --function demo # Yay! You will get texts of example.com
 ```
 
-### Side Project
+## Side Project
 
 If you don't want to create functions each time for each purpose, Please check out [pythonista-chromeless](https://github.com/umihico/pythonista-chromeless)
