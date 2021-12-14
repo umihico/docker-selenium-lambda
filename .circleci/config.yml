@@ -65,18 +65,6 @@ jobs:
           name: Delpoy
       - run:
           command: |
-            sls invoke -f demo > /tmp/RESULT
-          name: Invoke
-      - store_artifacts:
-          path: /tmp/RESULT
-      - run:
-          command: cat /tmp/RESULT | grep -q "This domain is for use in illustrative examples in documents"
-          name: Test
-      - add_ssh_keys:
-          fingerprints:
-            - "0c:de:e4:19:f5:d8:37:ac:5f:1f:a4:81:88:35:30:c1"
-      - run:
-          command: |
             SELENIUM_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img pip freeze | grep selenium | awk -F "==" '{print $2}')
             echo "SELENIUM_VERSION=${SELENIUM_VERSION}" >> /tmp/VERSIONS
           name: Extract installed selenium version
@@ -87,6 +75,15 @@ jobs:
           name: Extract installed Python version
       - store_artifacts:
           path: /tmp/VERSIONS
+      - run:
+          command: |
+            sls invoke -f demo > /tmp/RESULT
+          name: Invoke
+      - store_artifacts:
+          path: /tmp/RESULT
+      - run:
+          command: cat /tmp/RESULT | grep -q "This domain is for use in illustrative examples in documents"
+          name: Test
       - run:
           command: |
             set -euxo pipefail
@@ -101,6 +98,9 @@ jobs:
             git --no-pager diff
             git diff --numstat | grep -q -e "README.md" -e "Dockerfile" || circleci-agent step halt
           name: Exit if no changes
+      - add_ssh_keys:
+          fingerprints:
+            - "0c:de:e4:19:f5:d8:37:ac:5f:1f:a4:81:88:35:30:c1"
       - run:
           command: |
             git config user.email "umihico@users.noreply.github.com"
