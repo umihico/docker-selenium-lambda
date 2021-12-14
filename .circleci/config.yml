@@ -38,8 +38,6 @@ jobs:
             set -euxo pipefail
             JSON=$(curl https://omahaproxy.appspot.com/all.json | jq -r '.[] | select(.os=="linux") | .versions[] | select(.channel=="stable")')
             MAJOR_VERSION=$(echo $JSON | jq -r '.version | split(".") | .[0]')
-            CHROME_VERSION=$(echo $JSON | jq -r '.version')
-            echo "CHROME_VERSION=${CHROME_VERSION}" >> /tmp/VERSIONS
             POSITION=$(echo $JSON | jq -r '.branch_base_position')
 
             while true; do
@@ -63,6 +61,11 @@ jobs:
       - run:
           command: sls deploy
           name: Delpoy
+      - run:
+          command: |
+            CHROME_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img /opt/chrome/chrome --version | awk '{print $2}' | sed -e 's/^[[:space:]]*//')
+            echo "CHROME_VERSION=${CHROME_VERSION}" >> /tmp/VERSIONS
+          name: Extract installed chromium version
       - run:
           command: |
             SELENIUM_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img pip freeze | grep selenium | awk -F "==" '{print $2}')
