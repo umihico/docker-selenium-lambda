@@ -120,7 +120,7 @@ jobs:
             git push --set-upstream origin $BRANCH
             gh pr create --body-file /tmp/VERSIONS --title "PR:${TITLE}"
             gh pr merge --merge $BRANCH --body "[skip ci]"
-            git --no-pager diff HEAD^ HEAD --name-only | grep -q -e "README.md" || circleci-agent step halt
+            git --no-pager diff HEAD^ HEAD --name-only | grep -q -e "README.md" || exit 0
             gh release create $BRANCH --notes-file /tmp/VERSIONS --title "${TITLE}"
           name: Release
 
