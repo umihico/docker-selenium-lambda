@@ -99,8 +99,8 @@ jobs:
       - run:
           command: |
             git --no-pager diff
-            git diff --numstat | grep -q -e "README.md" -e "Dockerfile" || circleci-agent step halt
-          name: Exit if no changes
+            git --no-pager diff --name-only | grep -q -e "README.md" -e "Dockerfile" || circleci-agent step halt
+          name: Exit if nothing changes
       - add_ssh_keys:
           fingerprints:
             - "0c:de:e4:19:f5:d8:37:ac:5f:1f:a4:81:88:35:30:c1"
