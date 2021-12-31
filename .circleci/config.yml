@@ -28,6 +28,10 @@ jobs:
       - <<: *fix_docker
       - run:
           command: |
+            echo "TESTED_COMMIT=$(git rev-parse HEAD)" >> /tmp/VERSIONS
+          name: Fetch testing commit hash
+      - run:
+          command: |
             set -euxo pipefail
             docker pull public.ecr.aws/lambda/python:latest
             SHA256_DIGEST=$(docker inspect public.ecr.aws/lambda/python:latest | jq -r '.[0].RepoDigests[0] | split(":") | .[1]' )
