@@ -1,4 +1,5 @@
 from selenium import webdriver
+from tempfile import mkdtemp
 
 
 def handler(event=None, context=None):
@@ -12,7 +13,9 @@ def handler(event=None, context=None):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-dev-tools")
     options.add_argument("--no-zygote")
-    options.add_argument("--user-data-dir=/tmp/chrome-user-data")
+    options.add_argument(f"--user-data-dir={mkdtemp()}")
+    options.add_argument(f"--data-path={mkdtemp()}")
+    options.add_argument(f"--disk-cache-dir={mkdtemp()}")
     options.add_argument("--remote-debugging-port=9222")
     chrome = webdriver.Chrome("/opt/chromedriver",
                               options=options)
