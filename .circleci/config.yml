@@ -134,7 +134,9 @@ workflows:
   version: 2
   commit:
     jobs:
-      - main
+      - main:
+          context:
+            - public-circleci-aws
   nightly:
     triggers:
       - schedule:
@@ -144,4 +146,6 @@ workflows:
               only:
                 - circleci
     jobs:
-      - main
+      - main:
+          context:
+            - public-circleci-aws
