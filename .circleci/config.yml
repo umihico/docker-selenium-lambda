@@ -51,7 +51,7 @@ jobs:
 
             MAJOR_VERSION=$(echo $JSON | jq -r '.version | split(".") | .[0]')
 
-            while true; do
+            for _ in {1..100}; do
                 DOWNLOAD_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F${POSITION}%2Fchrome-linux.zip?alt=media"
                 curl -I $DOWNLOAD_URL | head -1 | grep -q 404 || break
                 POSITION=$(($POSITION-1))
