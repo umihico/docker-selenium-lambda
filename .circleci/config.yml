@@ -40,9 +40,16 @@ jobs:
       - run:
           command: |
             set -euxo pipefail
-            JSON=$(curl https://omahaproxy.appspot.com/all.json | jq -r '.[] | select(.os=="linux") | .versions[] | select(.channel=="stable")')
-            MAJOR_VERSION=$(echo $JSON | jq -r '.version | split(".") | .[0]')
+            WHOLE_JSON=$(curl https://omahaproxy.appspot.com/all.json)
+            JSON=$(echo $WHOLE_JSON | jq -r '.[] | select(.os=="linux") | .versions[] | select(.channel=="stable")')
             POSITION=$(echo $JSON | jq -r '.branch_base_position')
+
+            if (( POSITION < 900000 )); then
+                JSON=$(echo $WHOLE_JSON | jq -r '.[] | select(.os=="linux") | .versions[] | select(.channel=="beta")')
+                POSITION=$(echo $JSON | jq -r '.branch_base_position')
+            fi
+
+            MAJOR_VERSION=$(echo $JSON | jq -r '.version | split(".") | .[0]')
 
             while true; do
                 DOWNLOAD_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F${POSITION}%2Fchrome-linux.zip?alt=media"
