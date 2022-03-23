@@ -55,6 +55,7 @@ jobs:
                 DOWNLOAD_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F${POSITION}%2Fchrome-linux.zip?alt=media"
                 curl -I $DOWNLOAD_URL | head -1 | grep -q 404 || break
                 POSITION=$(($POSITION-1))
+                sleep 1
             done
 
             echo "POSITION=${POSITION}" >> /tmp/VERSIONS
