@@ -43,7 +43,6 @@ jobs:
             WHOLE_JSON=$(curl https://omahaproxy.appspot.com/all.json)
             JSON=$(echo $WHOLE_JSON | jq -r '.[] | select(.os=="linux") | .versions[] | select(.channel=="stable")')
             POSITION=$(echo $JSON | jq -r '.branch_base_position')
-            echo "CHANNEL=stable" >> /tmp/VERSIONS
 
             if (( POSITION < 900000 )); then
                 JSON=$(echo $WHOLE_JSON | jq -r '.[] | select(.os=="linux") | .versions[] | select(.channel=="beta")')
