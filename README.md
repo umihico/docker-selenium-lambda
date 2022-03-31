@@ -6,7 +6,7 @@ This image goes with these versions. [These are automatically updated and tested
 
 - Python 3.9.11
 - chromium 100.0.4896.0
-- chromedriver 100.0.4896.20
+- chromedriver 100.0.4896.60
 - selenium 4.1.3
 
 
