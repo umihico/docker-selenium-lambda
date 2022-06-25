@@ -1,5 +1,6 @@
 from selenium import webdriver
 from tempfile import mkdtemp
+from selenium.webdriver.common.by import By
 
 
 def handler(event=None, context=None):
@@ -20,4 +21,4 @@ def handler(event=None, context=None):
     chrome = webdriver.Chrome("/opt/chromedriver",
                               options=options)
     chrome.get("https://example.com/")
-    return chrome.find_element_by_xpath("//html").text
+    return chrome.find_element(by=By.XPATH, value="//html").text
