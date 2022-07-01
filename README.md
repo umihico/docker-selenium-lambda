@@ -4,7 +4,7 @@ This is minimum demo of headless chrome and selenium on container image on AWS L
 
 This image goes with these versions. [These are automatically updated and tested everyday. ![CircleCI](https://circleci.com/gh/umihico/docker-selenium-lambda/tree/circleci.svg?style=svg)](https://circleci.com/gh/umihico/docker-selenium-lambda/tree/circleci)
 
-- Python 3.9.12
+- Python 3.9.13
 - chromium 103.0.5060.0
 - chromedriver 103.0.5060.53
 - selenium 4.3.0
