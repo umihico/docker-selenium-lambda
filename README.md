@@ -20,6 +20,19 @@ $ sls deploy
 $ sls invoke --function demo # Yay! You will get texts of example.com
 ```
 
+## Public image is available
+
+If you want your image simplier and updated automatically, rewrite the Dockerfile with the following commands:
+
+```Dockerfile
+FROM umihico/aws-lambda-selenium-python:latest
+
+COPY main.py ./
+CMD [ "main.handler" ]
+```
+
+Available tags are listed [here](https://hub.docker.com/r/umihico/aws-lambda-selenium-python/tags)
+
 ## Side Project
 
 If you don't want to create functions each time for each purpose, Please check out [pythonista-chromeless](https://github.com/umihico/pythonista-chromeless)
