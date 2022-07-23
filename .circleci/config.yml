@@ -138,6 +138,21 @@ jobs:
             gh pr merge --delete-branch --merge $BRANCH --body "[skip ci]"
             [ -f /tmp/doRelease ] && gh release create $BRANCH --notes-file /tmp/VERSIONS --title "${TITLE}" || true
           name: Release
+      - run:
+          name: Publish image
+          command: |
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            source /tmp/VERSIONS
+            MAJOR_PYTHON_VERSION=$(echo $PYTHON_VERSION | cut -d "." -f 1)
+            MINOR_PYTHON_VERSION=$(echo $PYTHON_VERSION | cut -d "." -f 2)
+            docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:latest
+            docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${MAJOR_PYTHON_VERSION}
+            docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${MAJOR_PYTHON_VERSION}.${MINOR_PYTHON_VERSION}
+            docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${PYTHON_VERSION}
+            docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${PYTHON_VERSION}-selenium${SELENIUM_VERSION}
+            docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${PYTHON_VERSION}-chrome${CHROME_VERSION}
+            docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${PYTHON_VERSION}-selenium${SELENIUM_VERSION}-chrome${CHROME_VERSION}
+            docker image push --all-tags umihico/aws-lambda-selenium-python
 
 workflows:
   version: 2
