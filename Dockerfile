@@ -1,11 +1,11 @@
-FROM public.ecr.aws/lambda/python@sha256:86da461eded512488cbcd1dfd0a0ec43e09dc72b9e46d209cbc1c5f36308689e as build
+FROM public.ecr.aws/lambda/python@sha256:43ad771b69a3cd24d90c637c0a92155d1e847cb0944ab0d02e0226b2ab6d6c39 as build
 RUN yum install -y unzip && \
     curl -Lo "/tmp/chromedriver.zip" "https://chromedriver.storage.googleapis.com/107.0.5304.62/chromedriver_linux64.zip" && \
     curl -Lo "/tmp/chrome-linux.zip" "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1047731%2Fchrome-linux.zip?alt=media" && \
     unzip /tmp/chromedriver.zip -d /opt/ && \
     unzip /tmp/chrome-linux.zip -d /opt/
 
-FROM public.ecr.aws/lambda/python@sha256:86da461eded512488cbcd1dfd0a0ec43e09dc72b9e46d209cbc1c5f36308689e
+FROM public.ecr.aws/lambda/python@sha256:43ad771b69a3cd24d90c637c0a92155d1e847cb0944ab0d02e0226b2ab6d6c39
 RUN yum install atk cups-libs gtk3 libXcomposite alsa-lib \
     libXcursor libXdamage libXext libXi libXrandr libXScrnSaver \
     libXtst pango at-spi2-atk libXt xorg-x11-server-Xvfb \
