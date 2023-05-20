@@ -109,6 +109,11 @@ jobs:
           git --no-pager diff --name-only | grep -q "README.md" || DO_RELEASE="no"
           git --no-pager diff --name-only | grep -q "Dockerfile" || DO_RELEASE="no"
           echo "DO_RELEASE=${DO_RELEASE}" >> $GITHUB_OUTPUT
+      - name: Setup git config
+        run: |
+          # https://qiita.com/thaim/items/3d1a4d09ec4a7d8844ce
+          git config user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Release
         if: ${{ steps.detect-changes.outputs.DO_RELEASE == 'yes' && !env.ACT }}
         run: |
@@ -116,7 +121,13 @@ jobs:
           TITLE="Version Updates $(date)"
           git checkout -b $BRANCH
           git add Dockerfile README.md
-          echo "```diff\n$(git diff --staged)\n```" > /tmp/body-text.txt
+          echo "SHA256_DIGEST=${{ steps.docker-image-digest.outputs.SHA256_DIGEST }}" > /tmp/body-text.txt
+          echo "POSITION=${{ steps.chromium-versions.outputs.POSITION }}" >> /tmp/body-text.txt
+          echo "DRIVER_VERSION=${{ steps.chromedriver-version.outputs.DRIVER_VERSION }}" >> /tmp/body-text.txt
+          echo "PYTHON_VERSION=${{ steps.python-version.outputs.PYTHON_VERSION }}" >> /tmp/body-text.txt
+          echo "SELENIUM_VERSION=${{ steps.selenium-version.outputs.SELENIUM_VERSION }}" >> /tmp/body-text.txt
+          echo "CHROME_VERSION=${{ steps.chrome-version.outputs.CHROME_VERSION }}" >> /tmp/body-text.txt
+          echo "\n```diff\n$(git diff --staged)\n```" >> /tmp/body-text.txt
           git commit -m "${TITLE}"
           git push --set-upstream origin $BRANCH
           gh pr create --body-file /tmp/body-text.txt --title "PR:${TITLE}"
