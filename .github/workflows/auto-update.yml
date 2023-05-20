@@ -103,13 +103,14 @@ jobs:
           PYTHON_VERSION=${{ steps.python-version.outputs.PYTHON_VERSION }}
           sed -r "s/- chromium [0-9.]+/- chromium ${CHROME_VERSION}/g; s/- chromedriver [0-9.]+/- chromedriver ${DRIVER_VERSION}/g; s/- selenium [0-9.]+/- selenium ${SELENIUM_VERSION}/g; s/- Python [0-9.]+/- Python ${PYTHON_VERSION}/g" -i README.md
       - name: Detect changes
+        id: detect-changes
         run: |
           DO_RELEASE="yes"
           git --no-pager diff --name-only | grep -q "README.md" || DO_RELEASE="no"
           git --no-pager diff --name-only | grep -q "Dockerfile" || DO_RELEASE="no"
           echo "DO_RELEASE=${DO_RELEASE}" >> $GITHUB_OUTPUT
       - name: Release
-        if: ${{ env.DO_RELEASE == "yes" && !env.ACT }}
+        if: ${{ steps.detect-changes.outputs.DO_RELEASE == 'yes' && !env.ACT }}
         run: |
           BRANCH=$(date +%Y-%m-%d-%H%M%S)
           TITLE="Version Updates $(date)"
@@ -122,7 +123,7 @@ jobs:
           gh pr merge --delete-branch --merge $BRANCH
           gh release create $BRANCH --notes-file /tmp/body-text.txt --title "${TITLE}"
       - name: Publish image
-        if: ${{ env.DO_RELEASE == "yes" && !env.ACT }}
+        if: ${{ steps.detect-changes.outputs.DO_RELEASE == 'yes' && !env.ACT }}
         run: |
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
           PYTHON_VERSION=${{ steps.python-version.outputs.PYTHON_VERSION }}
