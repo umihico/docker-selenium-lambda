@@ -1,0 +1,140 @@
+name: auto-update
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    branches:
+      - feat/github-actions
+
+jobs:
+  auto-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install serverless
+        run: npm install -g serverless
+      - name: Note docker image digest
+        id: docker-image-digest
+        run: |
+          docker pull public.ecr.aws/lambda/python:latest
+          SHA256_DIGEST=$(docker inspect public.ecr.aws/lambda/python:latest | jq -r '.[0].RepoDigests[0] | split(":") | .[1]' )
+          echo "SHA256_DIGEST=${SHA256_DIGEST}" >> $GITHUB_OUTPUT
+      - name: Note Chromium versions
+        id: chromium-versions
+        run: |
+          WHOLE_JSON=$(curl https://omahaproxy.appspot.com/all.json)
+          JSON=$(echo $WHOLE_JSON | jq -r '.[] | select(.os=="linux") | .versions[] | select(.channel=="stable")')
+          CHANNEL="stable"
+          POSITION=$(echo $JSON | jq -r '.branch_base_position')
+          if (( POSITION < 900000 )); then
+              JSON=$(echo $WHOLE_JSON | jq -r '.[] | select(.os=="linux") | .versions[] | select(.channel=="beta")')
+              CHANNEL="beta"
+              POSITION=$(echo $JSON | jq -r '.branch_base_position')
+              echo "CHANNEL=${CHANNEL}" >> $GITHUB_OUTPUT
+          fi
+
+          MAJOR_VERSION=$(echo $JSON | jq -r '.version | split(".") | .[0]')
+          echo "MAJOR_VERSION=${MAJOR_VERSION}" >> $GITHUB_OUTPUT
+
+          for _ in {1..100}; do
+              DOWNLOAD_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F${POSITION}%2Fchrome-linux.zip?alt=media"
+              curl -I $DOWNLOAD_URL | head -1 | grep -q 404 || break
+              POSITION=$(($POSITION-1))
+              sleep 1
+          done
+
+          echo "POSITION=${POSITION}" >> $GITHUB_OUTPUT
+      - name: Note chromedriver version
+        id: chromedriver-version
+        run: |
+          MAJOR_VERSION=${{ steps.chromium-versions.outputs.MAJOR_VERSION }}
+          DRIVER_VERSION=$(curl "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${MAJOR_VERSION}")
+          echo "DRIVER_VERSION=${DRIVER_VERSION}" >> $GITHUB_OUTPUT
+      - name: Update Dockerfile
+        run: |
+          SHA256_DIGEST=${{ steps.docker-image-digest.outputs.SHA256_DIGEST }}
+          POSITION=${{ steps.chromium-versions.outputs.POSITION }}
+          DRIVER_VERSION=${{ steps.chromedriver-version.outputs.DRIVER_VERSION }}
+          sed -r "s/public.ecr.aws\/lambda\/python[:@a-z0-9]+/public.ecr.aws\/lambda\/python\@sha256\:${SHA256_DIGEST}/g; s/chromedriver.storage.googleapis.com\/[0-9.]+/chromedriver.storage.googleapis.com\/${DRIVER_VERSION}/g; s/Linux_x64%2F[0-9]+%2Fchrome-linux.zip/Linux_x64%2F${POSITION}%2Fchrome-linux.zip/g" -i Dockerfile
+      - name: Deploy
+        run: sls deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+      - name: Note chrome version
+        id: chrome-version
+        run: |
+          CHROME_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img /opt/chrome/chrome --version | awk '{print $2}' | sed -e 's/^[[:space:]]*//')
+          echo "CHROME_VERSION=${CHROME_VERSION}" >> $GITHUB_OUTPUT
+      - name: Note selenium version
+        id: selenium-version
+        run: |
+          SELENIUM_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img pip freeze | grep selenium | awk -F "==" '{print $2}')
+          echo "SELENIUM_VERSION=${SELENIUM_VERSION}" >> $GITHUB_OUTPUT
+      - name: Note python version
+        id: python-version
+        run: |
+          PYTHON_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img python -V | awk '{print $2}')
+          echo "PYTHON_VERSION=${PYTHON_VERSION}" >> $GITHUB_OUTPUT
+      - name: Invoke
+        id: invoke
+        run: sls invoke -f demo > /tmp/scraping-result.txt
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+      - name: Archive result
+        uses: actions/upload-artifact@v3
+        if: ${{ !env.ACT }}
+        with:
+          name: scraping-result
+          path: /tmp/scraping-result.txt
+      - name: Test
+        run: cat /tmp/scraping-result.txt | grep -q "This domain is for use in illustrative examples in documents"
+      - name: Update README
+        run: |
+          CHROME_VERSION=${{ steps.chrome-version.outputs.CHROME_VERSION }}
+          DRIVER_VERSION=${{ steps.chromedriver-version.outputs.DRIVER_VERSION }}
+          SELENIUM_VERSION=${{ steps.selenium-version.outputs.SELENIUM_VERSION }}
+          PYTHON_VERSION=${{ steps.python-version.outputs.PYTHON_VERSION }}
+          sed -r "s/- chromium [0-9.]+/- chromium ${CHROME_VERSION}/g; s/- chromedriver [0-9.]+/- chromedriver ${DRIVER_VERSION}/g; s/- selenium [0-9.]+/- selenium ${SELENIUM_VERSION}/g; s/- Python [0-9.]+/- Python ${PYTHON_VERSION}/g" -i README.md
+      - name: Detect changes
+        run: |
+          DO_RELEASE="yes"
+          git --no-pager diff --name-only | grep -q "README.md" || DO_RELEASE="no"
+          git --no-pager diff --name-only | grep -q "Dockerfile" || DO_RELEASE="no"
+          echo "DO_RELEASE=${DO_RELEASE}" >> $GITHUB_OUTPUT
+      - name: Release
+        if: ${{ env.DO_RELEASE == "yes" && !env.ACT }}
+        run: |
+          BRANCH=$(date +%Y-%m-%d-%H%M%S)
+          TITLE="Version Updates $(date)"
+          git checkout -b $BRANCH
+          git add Dockerfile README.md
+          echo "```diff\n$(git diff --staged)\n```" > /tmp/body-text.txt
+          git commit -m "${TITLE}"
+          git push --set-upstream origin $BRANCH
+          gh pr create --body-file /tmp/body-text.txt --title "PR:${TITLE}"
+          gh pr merge --delete-branch --merge $BRANCH
+          gh release create $BRANCH --notes-file /tmp/body-text.txt --title "${TITLE}"
+      - name: Publish image
+        if: ${{ env.DO_RELEASE == "yes" && !env.ACT }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          PYTHON_VERSION=${{ steps.python-version.outputs.PYTHON_VERSION }}
+          SELENIUM_VERSION=${{ steps.selenium-version.outputs.SELENIUM_VERSION }}
+          CHROME_VERSION=${{ steps.chrome-version.outputs.CHROME_VERSION }}
+          MAJOR_PYTHON_VERSION=$(echo $PYTHON_VERSION | cut -d "." -f 1)
+          MINOR_PYTHON_VERSION=$(echo $PYTHON_VERSION | cut -d "." -f 2)
+          docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:latest
+          docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${MAJOR_PYTHON_VERSION}
+          docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${MAJOR_PYTHON_VERSION}.${MINOR_PYTHON_VERSION}
+          docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${PYTHON_VERSION}
+          docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${PYTHON_VERSION}-selenium${SELENIUM_VERSION}
+          docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${PYTHON_VERSION}-chrome${CHROME_VERSION}
+          docker image tag serverless-docker-selenium-lambda-prod:img umihico/aws-lambda-selenium-python:${PYTHON_VERSION}-selenium${SELENIUM_VERSION}-chrome${CHROME_VERSION}
+          docker image push --all-tags umihico/aws-lambda-selenium-python
