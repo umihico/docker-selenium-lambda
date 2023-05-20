@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Install serverless
         run: npm install -g serverless
       - name: Note docker image digest
@@ -131,7 +133,7 @@ jobs:
           git commit -m "${TITLE}"
           git push --set-upstream origin $BRANCH
           gh pr create --body-file /tmp/body-text.txt --title "PR:${TITLE}"
-          gh pr merge --delete-branch --merge $BRANCH
+          gh pr merge --delete-branch --merge
           gh release create $BRANCH --notes-file /tmp/body-text.txt --title "${TITLE}"
         env:
           GH_TOKEN: ${{ github.token }}
