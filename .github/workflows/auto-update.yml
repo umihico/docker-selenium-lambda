@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Install serverless
         run: npm install -g serverless
       - name: Note docker image digest
@@ -126,8 +128,8 @@ jobs:
           echo "DRIVER_VERSION=${{ steps.chromedriver-version.outputs.DRIVER_VERSION }}" >> /tmp/body-text.txt
           echo "PYTHON_VERSION=${{ steps.python-version.outputs.PYTHON_VERSION }}" >> /tmp/body-text.txt
           echo "SELENIUM_VERSION=${{ steps.selenium-version.outputs.SELENIUM_VERSION }}" >> /tmp/body-text.txt
-          echo "CHROME_VERSION=${{ steps.chrome-version.outputs.CHROME_VERSION }}" >> /tmp/body-text.txt
-          echo "\n```diff\n$(git diff --staged)\n```" >> /tmp/body-text.txt
+          echo -e "CHROME_VERSION=${{ steps.chrome-version.outputs.CHROME_VERSION }}\n\n" >> /tmp/body-text.txt
+          git diff --staged >> /tmp/body-text.txt
           git commit -m "${TITLE}"
           git push --set-upstream origin $BRANCH
           gh pr create --body-file /tmp/body-text.txt --title "PR:${TITLE}"
@@ -137,6 +139,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: Publish image
         if: ${{ steps.detect-changes.outputs.DO_RELEASE == 'yes' && !env.ACT }}
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
           PYTHON_VERSION=${{ steps.python-version.outputs.PYTHON_VERSION }}
