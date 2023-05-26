@@ -139,6 +139,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: Publish image
         if: ${{ steps.detect-changes.outputs.DO_RELEASE == 'yes' && !env.ACT }}
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
           PYTHON_VERSION=${{ steps.python-version.outputs.PYTHON_VERSION }}
