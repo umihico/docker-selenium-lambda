@@ -132,9 +132,9 @@ jobs:
           echo "\n```diff\n$(git diff --staged)\n```" >> /tmp/body-text.txt
           git commit -m "${TITLE}"
           git push --set-upstream origin $BRANCH
-          gh pr create --body-file /tmp/body-text.txt --title "PR:${TITLE}"
+          gh pr create --body-file /tmp/body-text.txt --title "PR:${TITLE}" --base dummy-behind-branch
           gh pr merge --delete-branch --merge
-          gh release create $BRANCH --notes-file /tmp/body-text.txt --title "${TITLE}"
+          # gh release create $BRANCH --notes-file /tmp/body-text.txt --title "${TITLE}"
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Publish image
