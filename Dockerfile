@@ -1,6 +1,6 @@
 FROM public.ecr.aws/lambda/python@sha256:70b056503bffcc49eefe22897782393a984efa04be670dfd7aec1351bea6717d as build
 RUN yum install -y unzip && \
-    curl -Lo "/tmp/chromedriver.zip" "https://chromedriver.storage.googleapis.com/114.0.5735.16/chromedriver_linux64.zip" && \
+    curl -Lo "/tmp/chromedriver.zip" "https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip" && \
     curl -Lo "/tmp/chrome-linux.zip" "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1135561%2Fchrome-linux.zip?alt=media" && \
     unzip /tmp/chromedriver.zip -d /opt/ && \
     unzip /tmp/chrome-linux.zip -d /opt/
