@@ -1,5 +1,6 @@
 # docker-selenium-lambda
 
+![badge](https://github.com/umihico/docker-selenium-lambda/actions/workflows/demo-test.yml/badge.svg)
 ![badge](https://github.com/umihico/docker-selenium-lambda/actions/workflows/auto-update.yml/badge.svg)
 
 This is minimum demo of headless chrome and selenium on container image on AWS Lambda

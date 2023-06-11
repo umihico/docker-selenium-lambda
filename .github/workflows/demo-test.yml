@@ -1,0 +1,25 @@
+name: demo-test
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    branches:
+      - feat/github-actions**
+
+jobs:
+  demo-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Demo README's instructions
+        run: |
+          npm install -g serverless
+          sls create --template-url "https://github.com/umihico/docker-selenium-lambda/tree/main" --path docker-selenium-lambda && cd $_
+          sls deploy
+          sls invoke --function demo |& tee /tmp/scraping-result.txt
+          cat /tmp/scraping-result.txt | grep -q "This domain is for use in illustrative examples in documents"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
