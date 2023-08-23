@@ -3,6 +3,11 @@
 ![badge](https://github.com/umihico/docker-selenium-lambda/actions/workflows/demo-test.yml/badge.svg)
 ![badge](https://github.com/umihico/docker-selenium-lambda/actions/workflows/auto-update.yml/badge.svg)
 
+> :warning: **Caution!**
+>
+> Updating Chromium and Chromedriver versions to v115 or later is postponed in this repository. I'll try to fix later.
+> See https://chromedriver.chromium.org/downloads
+
 This is minimum demo of headless chrome and selenium on container image on AWS Lambda
 
 This image goes with these versions. [These are automatically updated and tested everyday.](https://github.com/umihico/docker-selenium-lambda/actions)
