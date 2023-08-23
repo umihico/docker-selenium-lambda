@@ -60,12 +60,17 @@ jobs:
           MAJOR_VERSION=${{ steps.chromium-versions.outputs.MAJOR_VERSION }}
           DRIVER_VERSION=$(curl "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${MAJOR_VERSION}")
           echo "DRIVER_VERSION=${DRIVER_VERSION}" >> $GITHUB_OUTPUT
+      - name: Update Selenium
+        id: selenium-version
+        run: |
+          echo "SELENIUM_VERSION=$(curl -s https://pypi.org/pypi/selenium/json | jq -r .info.version)" >> $GITHUB_OUTPUT
       - name: Update Dockerfile
         run: |
           SHA256_DIGEST=${{ steps.docker-image-digest.outputs.SHA256_DIGEST }}
           POSITION=${{ steps.chromium-versions.outputs.POSITION }}
           DRIVER_VERSION=${{ steps.chromedriver-version.outputs.DRIVER_VERSION }}
-          sed -r "s/public.ecr.aws\/lambda\/python[:@a-z0-9]+/public.ecr.aws\/lambda\/python\@sha256\:${SHA256_DIGEST}/g; s/chromedriver.storage.googleapis.com\/[0-9.]+/chromedriver.storage.googleapis.com\/${DRIVER_VERSION}/g; s/Linux_x64%2F[0-9]+%2Fchrome-linux.zip/Linux_x64%2F${POSITION}%2Fchrome-linux.zip/g" -i Dockerfile
+          SELENIUM_VERSION=${{ steps.selenium-version.outputs.SELENIUM_VERSION }}
+          sed -r "s/public.ecr.aws\/lambda\/python[:@a-z0-9]+/public.ecr.aws\/lambda\/python\@sha256\:${SHA256_DIGEST}/g; s/chromedriver.storage.googleapis.com\/[0-9.]+/chromedriver.storage.googleapis.com\/${DRIVER_VERSION}/g; s/Linux_x64%2F[0-9]+%2Fchrome-linux.zip/Linux_x64%2F${POSITION}%2Fchrome-linux.zip/g; s/selenium==[0-9\.]*/selenium==${SELENIUM_VERSION}/g" -i Dockerfile
       - name: Deploy
         run: sls deploy
         env:
@@ -77,11 +82,6 @@ jobs:
         run: |
           CHROME_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img /opt/chrome/chrome --version | awk '{print $2}' | sed -e 's/^[[:space:]]*//')
           echo "CHROME_VERSION=${CHROME_VERSION}" >> $GITHUB_OUTPUT
-      - name: Note selenium version
-        id: selenium-version
-        run: |
-          SELENIUM_VERSION=$(docker run --rm --entrypoint '' serverless-docker-selenium-lambda-prod:img pip freeze | grep selenium | awk -F "==" '{print $2}')
-          echo "SELENIUM_VERSION=${SELENIUM_VERSION}" >> $GITHUB_OUTPUT
       - name: Note python version
         id: python-version
         run: |

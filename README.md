@@ -15,7 +15,7 @@ This image goes with these versions. [These are automatically updated and tested
 - Python 3.11.4
 - chromium 114.0.5735.0
 - chromedriver 114.0.5735.90
-- selenium 4.9.1
+- selenium 4.11.2
 
 ## Running the demo
 

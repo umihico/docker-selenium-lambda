@@ -5,6 +5,8 @@ from selenium.webdriver.common.by import By
 
 def handler(event=None, context=None):
     options = webdriver.ChromeOptions()
+    service = webdriver.ChromeService("/opt/chromedriver")
+
     options.binary_location = '/opt/chrome/chrome'
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
@@ -18,7 +20,8 @@ def handler(event=None, context=None):
     options.add_argument(f"--data-path={mkdtemp()}")
     options.add_argument(f"--disk-cache-dir={mkdtemp()}")
     options.add_argument("--remote-debugging-port=9222")
-    chrome = webdriver.Chrome("/opt/chromedriver",
-                              options=options)
+
+    chrome = webdriver.Chrome(options=options, service=service)
     chrome.get("https://example.com/")
+
     return chrome.find_element(by=By.XPATH, value="//html").text
