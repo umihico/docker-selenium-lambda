@@ -27,6 +27,11 @@ jobs:
       - name: Note Chromium versions
         id: chromium-versions
         run: |
+          echo "CHANNEL=stable" >> $GITHUB_OUTPUT
+          echo "MAJOR_VERSION=114" >> $GITHUB_OUTPUT
+          echo "POSITION=1135561" >> $GITHUB_OUTPUT
+          exit 0
+          # This way of getting Chromium version is not working anymore. https://chromedriver.chromium.org/downloads
           WHOLE_JSON=$(curl https://omahaproxy.appspot.com/all.json)
           JSON=$(echo $WHOLE_JSON | jq -r '.[] | select(.os=="linux") | .versions[] | select(.channel=="stable")')
           CHANNEL="stable"
