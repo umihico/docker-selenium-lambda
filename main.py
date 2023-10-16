@@ -8,7 +8,7 @@ def handler(event=None, context=None):
     service = webdriver.ChromeService("/opt/chromedriver")
 
     options.binary_location = '/opt/chrome/chrome'
-    options.add_argument('--headless')
+    options.add_argument("--headless=new")
     options.add_argument('--no-sandbox')
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1280x1696")
