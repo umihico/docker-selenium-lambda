@@ -9,7 +9,7 @@ FROM public.ecr.aws/lambda/python@sha256:f0c3116a56d167eba8021a5d7c595f969835fbe
 RUN dnf install -y atk cups-libs gtk3 libXcomposite alsa-lib \
     libXcursor libXdamage libXext libXi libXrandr libXScrnSaver \
     libXtst pango at-spi2-atk libXt xorg-x11-server-Xvfb \
-    xorg-x11-xauth dbus-glib dbus-glib-devel
+    xorg-x11-xauth dbus-glib dbus-glib-devel nss
 RUN pip install selenium==4.15.2
 COPY --from=build /opt/chrome-linux64 /opt/chrome
 COPY --from=build /opt/chromedriver-linux64 /opt/
