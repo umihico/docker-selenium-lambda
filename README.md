@@ -24,7 +24,7 @@ $ sls invoke --function demo # Yay! You will get texts of example.com
 
 ## Public image is available
 
-If you want your image simplier and updated automatically, rewrite the Dockerfile with the following commands:
+If you want your image simpler and updated automatically, rewrite the Dockerfile with the following commands:
 
 ```Dockerfile
 FROM umihico/aws-lambda-selenium-python:latest
