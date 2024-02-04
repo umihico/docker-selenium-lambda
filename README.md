@@ -37,6 +37,6 @@ Available tags are listed [here](https://hub.docker.com/r/umihico/aws-lambda-sel
 
 ## Side Project
 
-Are you interested in **Python** or **Selenium**? Please check out [docker-playwright-lambda](https://github.com/umihico/docker-playwright-lambda)
+Are you interested in **Node.js** or **Playwright**? Please check out [docker-playwright-lambda](https://github.com/umihico/docker-playwright-lambda)
 
 If you don't want to create functions each time for each purpose, Please check out [pythonista-chromeless](https://github.com/umihico/pythonista-chromeless)
