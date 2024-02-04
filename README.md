@@ -1,7 +1,7 @@
 # docker-selenium-lambda
 
-![badge](https://github.com/umihico/docker-selenium-lambda/actions/workflows/demo-test.yml/badge.svg)
-![badge](https://github.com/umihico/docker-selenium-lambda/actions/workflows/auto-update.yml/badge.svg)
+[![badge](https://github.com/umihico/docker-selenium-lambda/actions/workflows/demo-test.yml/badge.svg)](https://github.com/umihico/docker-selenium-lambda/actions/workflows/demo-test.yml)
+[![badge](https://github.com/umihico/docker-selenium-lambda/actions/workflows/auto-update.yml/badge.svg)](https://github.com/umihico/docker-selenium-lambda/actions/workflows/auto-update.yml)
 
 This is minimum demo of headless chrome and selenium on container image on AWS Lambda
 
@@ -36,5 +36,7 @@ CMD [ "main.handler" ]
 Available tags are listed [here](https://hub.docker.com/r/umihico/aws-lambda-selenium-python/tags)
 
 ## Side Project
+
+Are you interested in **Python** or **Selenium**? Please check out [docker-playwright-lambda](https://github.com/umihico/docker-playwright-lambda)
 
 If you don't want to create functions each time for each purpose, Please check out [pythonista-chromeless](https://github.com/umihico/pythonista-chromeless)
