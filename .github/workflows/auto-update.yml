@@ -7,15 +7,23 @@ on:
     branches:
       - feat/github-actions
 
+concurrency:
+  group: deploy-prod-stack
+
 jobs:
   auto-update:
     runs-on: ubuntu-latest
-
+    env:
+      AWS_REGION: ap-northeast-1
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
       - name: Install serverless
         run: npm install -g serverless
       - name: Note docker image digest
@@ -44,13 +52,9 @@ jobs:
           SHA256_DIGEST=${{ steps.docker-image-digest.outputs.SHA256_DIGEST }}
           CHROME_VERSION=${{ steps.chrome-versions.outputs.CHROME_VERSION }}
           SELENIUM_VERSION=${{ steps.selenium-version.outputs.SELENIUM_VERSION }}
-          sed -r "s/public.ecr.aws\/lambda\/python[:@a-z0-9]+/public.ecr.aws\/lambda\/python\@sha256\:${SHA256_DIGEST}/g; s/chrome-for-testing\/[0-9.]+/chrome-for-testing\/${CHROME_VERSION}/g; s/selenium==[0-9\.]*/selenium==${SELENIUM_VERSION}/g" -i Dockerfile
+          sed -r "s/public.ecr.aws\/lambda\/python[:@a-z0-9]+/public.ecr.aws\/lambda\/python\@sha256\:${SHA256_DIGEST}/g; s/chrome-for-testing-public\/[0-9.]+/chrome-for-testing-public\/${CHROME_VERSION}/g; s/selenium==[0-9\.]*/selenium==${SELENIUM_VERSION}/g" -i Dockerfile
       - name: Deploy
         run: sls deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
       - name: Note chrome version
         id: chrome-version
         run: |
@@ -64,10 +68,6 @@ jobs:
       - name: Invoke
         id: invoke
         run: sls invoke -f demo > /tmp/scraping-result.txt
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
       - name: Archive result
         uses: actions/upload-artifact@v3
         if: ${{ !env.ACT }}

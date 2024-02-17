@@ -1,0 +1,33 @@
+name: check
+
+on:
+  - push
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-prod-stack
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ap-northeast-1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+      - name: Install Serverless Framework
+        run: npm install -g serverless
+      - name: Wait for CloudFormation stack to be updated
+        run: aws cloudformation wait stack-update-complete --stack-name="docker-selenium-lambda-prod" || true
+      - name: Deploy
+        run: sls deploy
+      - name: Invoke
+        run: sls invoke --function demo |& tee /tmp/scraping-result.txt
+      - name: Check
+        run: cat /tmp/scraping-result.txt | grep -q "This domain is for use in illustrative examples in documents"
