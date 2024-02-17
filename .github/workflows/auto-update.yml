@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - feat/github-actions
+      - main
 
 concurrency:
   group: deploy-prod-stack
