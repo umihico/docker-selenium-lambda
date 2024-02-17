@@ -8,6 +8,9 @@ on:
     branches:
       - feat/github-actions**
 
+concurrency:
+  group: deploy-prod-stack
+
 jobs:
   demo-test:
     runs-on: ubuntu-latest

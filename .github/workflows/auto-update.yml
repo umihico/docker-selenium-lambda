@@ -7,6 +7,9 @@ on:
     branches:
       - feat/github-actions
 
+concurrency:
+  group: deploy-prod-stack
+
 jobs:
   auto-update:
     runs-on: ubuntu-latest
