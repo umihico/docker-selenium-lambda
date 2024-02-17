@@ -8,6 +8,11 @@ on:
       - feat/github-actions
       - main
 
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
 concurrency:
   group: deploy-prod-stack
 

@@ -8,6 +8,10 @@ on:
     branches:
       - feat/github-actions**
 
+permissions:
+  id-token: write
+  contents: read
+
 concurrency:
   group: deploy-prod-stack
 
