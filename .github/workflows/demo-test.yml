@@ -14,8 +14,13 @@ concurrency:
 jobs:
   demo-test:
     runs-on: ubuntu-latest
-
+    env:
+      AWS_REGION: ap-northeast-1
     steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
       - name: Demo README's instructions
         run: |
           npm install -g serverless
@@ -23,7 +28,3 @@ jobs:
           sls deploy
           sls invoke --function demo |& tee /tmp/scraping-result.txt
           cat /tmp/scraping-result.txt | grep -q "This domain is for use in illustrative examples in documents"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
