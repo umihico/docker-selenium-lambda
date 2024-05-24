@@ -27,7 +27,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
       - name: Demo README's instructions
         run: |
-          npm install -g serverless
+          npm install -g serverless@^3
           sls create --template-url "https://github.com/umihico/docker-selenium-lambda/tree/main" --path docker-selenium-lambda && cd $_
           sls deploy
           sls invoke --function demo |& tee /tmp/scraping-result.txt

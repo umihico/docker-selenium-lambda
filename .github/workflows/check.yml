@@ -22,7 +22,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
       - name: Install Serverless Framework
-        run: npm install -g serverless
+        run: npm install -g serverless@^3
       - name: Wait for CloudFormation stack to be updated
         run: aws cloudformation wait stack-update-complete --stack-name="docker-selenium-lambda-prod" || true
       - name: Deploy
