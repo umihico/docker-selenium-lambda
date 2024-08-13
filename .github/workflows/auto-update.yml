@@ -74,6 +74,8 @@ jobs:
       - name: Invoke
         id: invoke
         run: sls invoke -f demo > /tmp/scraping-result.txt
+      - name: Clean up (ECR costs)
+        run: sls remove
       - name: Archive result
         uses: actions/upload-artifact@v3
         if: ${{ !env.ACT }}
