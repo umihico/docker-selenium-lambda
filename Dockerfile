@@ -1,11 +1,11 @@
-FROM public.ecr.aws/lambda/python@sha256:fc780ffbfbd0a7796648ff30af64c3f527b7213aa9eba42ae4c02f88c8c0d0e5 as build
+FROM public.ecr.aws/lambda/python@sha256:bb5a7659611e5719e71ce9d1b7446bdb40b0e5be52061857f54393da6b0c98fd as build
 RUN dnf install -y unzip && \
-    curl -Lo "/tmp/chromedriver-linux64.zip" "https://storage.googleapis.com/chrome-for-testing-public/127.0.6533.99/linux64/chromedriver-linux64.zip" && \
-    curl -Lo "/tmp/chrome-linux64.zip" "https://storage.googleapis.com/chrome-for-testing-public/127.0.6533.99/linux64/chrome-linux64.zip" && \
+    curl -Lo "/tmp/chromedriver-linux64.zip" "https://storage.googleapis.com/chrome-for-testing-public/127.0.6533.119/linux64/chromedriver-linux64.zip" && \
+    curl -Lo "/tmp/chrome-linux64.zip" "https://storage.googleapis.com/chrome-for-testing-public/127.0.6533.119/linux64/chrome-linux64.zip" && \
     unzip /tmp/chromedriver-linux64.zip -d /opt/ && \
     unzip /tmp/chrome-linux64.zip -d /opt/
 
-FROM public.ecr.aws/lambda/python@sha256:fc780ffbfbd0a7796648ff30af64c3f527b7213aa9eba42ae4c02f88c8c0d0e5
+FROM public.ecr.aws/lambda/python@sha256:bb5a7659611e5719e71ce9d1b7446bdb40b0e5be52061857f54393da6b0c98fd
 RUN dnf install -y atk cups-libs gtk3 libXcomposite alsa-lib \
     libXcursor libXdamage libXext libXi libXrandr libXScrnSaver \
     libXtst pango at-spi2-atk libXt xorg-x11-server-Xvfb \
