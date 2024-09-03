@@ -32,5 +32,3 @@ jobs:
           sls deploy
           sls invoke --function demo |& tee /tmp/scraping-result.txt
           cat /tmp/scraping-result.txt | grep -q "This domain is for use in illustrative examples in documents"
-      - name: Clean up (ECR costs)
-        run: sls remove
