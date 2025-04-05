@@ -10,7 +10,7 @@ This image goes with these versions. [These are automatically updated and tested
 - Python 3.13.2
 - chromium 135.0.7049.42
 - chromedriver 135.0.7049.42
-- selenium 4.30.0
+- selenium 4.31.0
 
 ## Running the demo
 
