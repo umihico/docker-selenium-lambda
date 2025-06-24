@@ -11,7 +11,7 @@ def handler(event=None, context=None):
     options.add_argument("--headless=new")
     options.add_argument('--no-sandbox')
     options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1280x1696")
+    options.add_argument("--window-size=1280,1696")
     options.add_argument("--single-process")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-dev-tools")
