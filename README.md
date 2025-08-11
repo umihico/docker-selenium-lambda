@@ -85,7 +85,7 @@ docker run --entrypoint python aws-lambda-selenium-python:latest main.py
 You can add a dynamic url to this setup with something like
 
 ```python
-event = {"target": sys.argv[1]} if len(sys.argv) > 1 else {}
+event = {"url": sys.argv[1]} if len(sys.argv) > 1 else {}
 ```
 
 ## Side Project
