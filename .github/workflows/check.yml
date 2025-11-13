@@ -1,7 +1,10 @@
 name: check
 
 on:
-  - push
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
 
 permissions:
   id-token: write
