@@ -83,7 +83,7 @@ jobs:
           name: scraping-result
           path: /tmp/scraping-result.txt
       - name: Test
-        run: cat /tmp/scraping-result.txt | grep -q "This domain is for use in illustrative examples in documents"
+        run: cat /tmp/scraping-result.txt | grep -q "This domain is for use in documentation examples"
       - name: Update README
         run: |
           CHROME_VERSION=${{ steps.chrome-versions.outputs.CHROME_VERSION }}
