@@ -31,4 +31,4 @@ jobs:
           sls create --template-url "https://github.com/umihico/docker-selenium-lambda/tree/main" --path docker-selenium-lambda && cd $_
           sls deploy
           sls invoke --function demo |& tee /tmp/scraping-result.txt
-          cat /tmp/scraping-result.txt | grep -q "This domain is for use in illustrative examples in documents"
+          cat /tmp/scraping-result.txt | grep -q "This domain is for use in documentation examples"
