@@ -1,7 +1,7 @@
 FROM public.ecr.aws/lambda/python@sha256:848e60fa6f070804e1a1b69a1625960ca7bc8c76b2497ca4ce8ac7b71ceda63a as build
 RUN dnf install -y unzip && \
-    curl -Lo "/tmp/chromedriver-linux64.zip" "https://storage.googleapis.com/chrome-for-testing-public/149.0.7827.55/linux64/chromedriver-linux64.zip" && \
-    curl -Lo "/tmp/chrome-linux64.zip" "https://storage.googleapis.com/chrome-for-testing-public/149.0.7827.55/linux64/chrome-linux64.zip" && \
+    curl -Lo "/tmp/chromedriver-linux64.zip" "https://storage.googleapis.com/chrome-for-testing-public/149.0.7827.115/linux64/chromedriver-linux64.zip" && \
+    curl -Lo "/tmp/chrome-linux64.zip" "https://storage.googleapis.com/chrome-for-testing-public/149.0.7827.115/linux64/chrome-linux64.zip" && \
     unzip /tmp/chromedriver-linux64.zip -d /opt/ && \
     unzip /tmp/chrome-linux64.zip -d /opt/
 
