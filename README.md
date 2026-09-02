@@ -8,8 +8,8 @@ This is minimum demo of headless chrome and selenium on container image on AWS L
 This image goes with these versions. [These are automatically updated and tested everyday.](https://github.com/umihico/docker-selenium-lambda/actions)
 
 - Python 3.14.6
-- chromium 152.0.7977.64
-- chromedriver 152.0.7977.64
+- chromium 152.0.7977.75
+- chromedriver 152.0.7977.75
 - selenium 4.48.0
 
 ## Running the demo
