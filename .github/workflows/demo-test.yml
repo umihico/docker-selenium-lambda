@@ -29,6 +29,8 @@ jobs:
         run: |
           npm install -g serverless@^3
           sls create --template-url "https://github.com/umihico/docker-selenium-lambda/tree/main" --path docker-selenium-lambda && cd $_
+          # Drop any orphaned log group so CFN ResourceExistenceCheck doesn't reject the deploy
+          aws logs delete-log-group --log-group-name /aws/lambda/docker-selenium-lambda-prod-demo 2>/dev/null || true
           sls deploy
           sls invoke --function demo |& tee /tmp/scraping-result.txt
           cat /tmp/scraping-result.txt | grep -q "This domain is for use in documentation examples"

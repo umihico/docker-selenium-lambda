@@ -26,8 +26,13 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
       - name: Install Serverless Framework
         run: npm install -g serverless@^3
-      - name: Wait for CloudFormation stack to be updated
-        run: aws cloudformation wait stack-update-complete --stack-name="docker-selenium-lambda-prod" || true
+      - name: Delete orphaned Lambda log group
+        # The CloudWatch log group /aws/lambda/<fn> is auto-created by Lambda on
+        # invoke and can outlive `sls remove`, leaving an orphan. CloudFormation's
+        # AWS::EarlyValidation::ResourceExistenceCheck then rejects the deploy
+        # ("Resource of type 'AWS::Logs::LogGroup' ... already exists"). Delete it
+        # so the stack can create it cleanly.
+        run: aws logs delete-log-group --log-group-name /aws/lambda/docker-selenium-lambda-prod-demo 2>/dev/null || true
       - name: Deploy
         run: sls deploy
       - name: Invoke
