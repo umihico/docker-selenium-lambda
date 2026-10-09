@@ -26,33 +26,13 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
       - name: Install Serverless Framework
         run: npm install -g serverless@^3
-      - name: DIAG ResourceExistenceCheck
-        run: |
-          set -x
-          aws --version
-          aws sts get-caller-identity
-          # generate the real templates serverless would deploy (builds the image)
-          sls package --package /tmp/pkg || true
-          echo "===== create-stack template ====="
-          cat /tmp/pkg/cloudformation-template-create-stack.json || true
-          echo "===== update-stack template (resources) ====="
-          jq '.Resources | to_entries | map({id:.key, type:.value.Type, name:(.value.Properties.FunctionName // .value.Properties.LogGroupName // .value.Properties.RoleName // .value.Properties.RepositoryName // "-")})' /tmp/pkg/cloudformation-template-update-stack.json || true
-          CREATE_T=/tmp/pkg/cloudformation-template-create-stack.json
-          UPDATE_T=/tmp/pkg/cloudformation-template-update-stack.json
-          for pair in "create:$CREATE_T" "update:$UPDATE_T"; do
-            KIND=${pair%%:*}; T=${pair#*:}
-            SN="diag-exist-$KIND"
-            echo "===== manual CREATE change set ($KIND template) ====="
-            CSID=$(aws cloudformation create-change-set --stack-name "$SN" --change-set-name d --change-set-type CREATE --template-body "file://$T" --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --query Id --output text 2>&1) || echo "create err: $CSID"
-            sleep 15
-            echo "--- describe-change-set ---"
-            aws cloudformation describe-change-set --stack-name "$SN" --change-set-name d --query '{Status:Status,Reason:StatusReason}' --output json 2>&1 || true
-            echo "--- describe-events (if supported) ---"
-            aws cloudformation describe-events --change-set-name "$CSID" --output json 2>&1 | head -60 || echo "describe-events not available"
-            aws cloudformation delete-change-set --stack-name "$SN" --change-set-name d 2>/dev/null || true
-            aws cloudformation delete-stack --stack-name "$SN" 2>/dev/null || true
-          done
-          set +x
+      - name: Delete orphaned Lambda log group
+        # The CloudWatch log group /aws/lambda/<fn> is auto-created by Lambda on
+        # invoke and can outlive `sls remove`, leaving an orphan. CloudFormation's
+        # AWS::EarlyValidation::ResourceExistenceCheck then rejects the deploy
+        # ("Resource of type 'AWS::Logs::LogGroup' ... already exists"). Delete it
+        # so the stack can create it cleanly.
+        run: aws logs delete-log-group --log-group-name /aws/lambda/docker-selenium-lambda-prod-demo 2>/dev/null || true
       - name: Deploy
         run: sls deploy
       - name: Invoke
